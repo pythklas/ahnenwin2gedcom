@@ -1,0 +1,6 @@
+/.idea
+/genj
+/target
+/tmp
+src/main/resources/csv
+src/main/resources/excel
