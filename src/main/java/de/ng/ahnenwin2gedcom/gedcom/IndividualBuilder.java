@@ -7,6 +7,7 @@ import org.gedcom4j.model.enumerations.IndividualAttributeType;
 import org.gedcom4j.model.enumerations.IndividualEventType;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
@@ -71,31 +72,29 @@ class IndividualBuilder {
         return this;
     }
 
-    IndividualBuilder address(String address1, String address2, String address3, String postalCode, String city, String hausnummer) {
+    IndividualBuilder address(String address1, String address2, String addresszusatz,
+                              String postalCode, String city, String hausnummer) {
         boolean address1Exists = StringFun.notEmpty(address1);
         boolean address2Exists = StringFun.notEmpty(address2);
-        boolean address3Exists = StringFun.notEmpty(address3);
+        boolean addresszusatzExists = StringFun.notEmpty(addresszusatz);
         boolean postalCodeExists = StringFun.notEmpty(postalCode);
         boolean cityExists = StringFun.notEmpty(city);
         boolean hausnummerExists = StringFun.notEmpty(hausnummer);
         boolean someAddressAttributeIsWellDefined = address1Exists ||
-                address2Exists || address3Exists || postalCodeExists || cityExists || hausnummerExists;
+                address2Exists || addresszusatzExists || postalCodeExists || cityExists || hausnummerExists;
 
         if (!someAddressAttributeIsWellDefined) return this;
 
-        Address address = new Address();
+        List<String> addressAsNote = new LinkedList<>();
 
-        if (address1Exists) address.setAddr1(address1);
-        if (address2Exists) address.setAddr2(address2);
-        if (address3Exists) address.setAddr3(address3);
-        if (postalCodeExists) address.setPostalCode(postalCode);
-        if (cityExists) address.setCity(city);
+        if (address1Exists) addressAsNote.add(String.format("Adresse 1: %s", address1));
+        if (address2Exists) addressAsNote.add(String.format("Adresse 2: %s", address2));
+        if (addresszusatzExists) addressAsNote.add(String.format("Adresszusatz: %s", addresszusatz));
+        if (postalCodeExists) addressAsNote.add(String.format("PLZ: %s", postalCode));
+        if (cityExists) addressAsNote.add(String.format("Ort: %s", city));
+        if (hausnummerExists) addressAsNote.add(String.format("Hausnummer: %s", hausnummer));
 
-        if (hausnummerExists) {
-            address.getLines(true).add(String.format("Hausnummer: %s", hausnummer));
-        }
-
-        individual.setAddress(address);
+        addResidence(addressAsNote);
 
         return this;
     }
@@ -106,12 +105,12 @@ class IndividualBuilder {
     }
 
     IndividualBuilder religion(String religion) {
-        setAttribute(IndividualAttributeType.RELIGIOUS_AFFILIATION, religion);
+        addAttribute(IndividualAttributeType.RELIGIOUS_AFFILIATION, religion);
         return this;
     }
 
     IndividualBuilder occupation(String occupation) {
-        setAttribute(IndividualAttributeType.OCCUPATION, occupation);
+        addAttribute(IndividualAttributeType.OCCUPATION, occupation);
         return this;
     }
 
@@ -136,8 +135,8 @@ class IndividualBuilder {
         return this;
     }
 
-    IndividualBuilder lebensortAsNote(String lebensort) {
-        addNote("Lebensort", lebensort);
+    IndividualBuilder residence(String placeName) {
+        addWohnorte(placeName);
         return this;
     }
 
@@ -225,12 +224,41 @@ class IndividualBuilder {
         return noteStructure;
     }
 
-    private void setAttribute(IndividualAttributeType type, String description) {
+    private void addAttribute(IndividualAttributeType type, String description) {
         if (StringFun.isEmpty(description)) return;
 
         var attribute = new IndividualAttribute();
         attribute.setType(type);
         attribute.setDescription(description);
+        individual.getAttributes(true).add(attribute);
+    }
+
+    private void addWohnorte(String placeName) {
+        if (StringFun.isEmpty(placeName)) return;
+
+        var attribute = new IndividualAttribute();
+        attribute.setType(IndividualAttributeType.RESIDENCE);
+        Place place = new Place();
+        place.setPlaceName(PlaceFormatter.format(placeName));
+        attribute.setPlace(place);
+        attribute.setSubType("Wohnorte");
+        individual.getAttributes(true).add(attribute);
+    }
+
+    private void addResidence(List<String> addressAsNote) {
+        if (addressAsNote == null) return;
+
+        var attribute = new IndividualAttribute();
+        attribute.setType(IndividualAttributeType.RESIDENCE);
+
+        // Es gibt einen Bug in der Gedcom-Library, durch den ich keine Multiline-Notes erstellen kann.
+        // TODO: Kann ich diesen Workaround vermeiden?
+        String multieLineNote = String.join("; ", addressAsNote);
+        NoteRecord note = noteStore.createNote(multieLineNote);
+        NoteStructure noteStructure = new NoteStructure();
+        noteStructure.setNoteReference(note);
+        attribute.getNoteStructures(true).add(noteStructure);
+        attribute.setSubType("Adresse");
         individual.getAttributes(true).add(attribute);
     }
 }

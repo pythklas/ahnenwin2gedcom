@@ -9,10 +9,10 @@ class NoteStore {
     private final XrefSequence noteSequence = new XrefSequence();
     private final Map<String, NoteRecord> store = new HashMap<>();
 
-    NoteRecord createNote(String note) {
+    NoteRecord createNote(String... notes) {
         String xref = noteSequence.next();
         NoteRecord noteRecord = new NoteRecord(xref);
-        noteRecord.getLines(true).add(note);
+        for (var note : notes) noteRecord.getLines(true).add(note);
         store.put(xref, noteRecord);
         return noteRecord;
     }

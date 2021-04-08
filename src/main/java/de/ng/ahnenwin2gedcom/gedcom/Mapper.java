@@ -63,7 +63,7 @@ class Mapper {
                         csvAhne.getString(AhnenColumn.BEERDIGUNG_JAHR),
                         csvAhne.getString(AhnenColumn.BEERDIGUNG_ORT),
                         csvAhne.getString(AhnenColumn.BEERDIGUNG_QUELLE))
-                .lebensortAsNote(csvAhne.getString(AhnenColumn.LEBENSORT))
+                .residence(csvAhne.getString(AhnenColumn.LEBENSORT))
                 .aliveAsNote(csvAhne.getString(AhnenColumn.LEBT))
                 .adoptedAsNote(csvAhne.getString(AhnenColumn.ADOPT))
                 .source(csvAhne.getString(AhnenColumn.QUELLE))
