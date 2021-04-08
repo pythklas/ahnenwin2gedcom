@@ -7,7 +7,6 @@ import org.gedcom4j.model.enumerations.IndividualAttributeType;
 import org.gedcom4j.model.enumerations.IndividualEventType;
 
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
@@ -79,30 +78,25 @@ class IndividualBuilder {
         boolean postalCodeExists = StringFun.notEmpty(postalCode);
         boolean cityExists = StringFun.notEmpty(city);
         boolean hausnummerExists = StringFun.notEmpty(hausnummer);
-        if (address1Exists || address2Exists || address3Exists || postalCodeExists || cityExists || hausnummerExists) {
-            Address address = new Address();
-            // TODO: das wird noch nicht in die Gedcom-Datei geschrieben?
-            if (address1Exists) {
-                address.setAddr1(address1);
-            }
-            if (address2Exists) {
-                address.setAddr2(address2);
-            }
-            if (address3Exists) {
-                address.setAddr3(address3);
-            }
-            if (postalCodeExists) {
-                address.setPostalCode(postalCode);
-            }
-            if (cityExists) {
-                address.setCity(city);
-            }
-            if (hausnummerExists) {
-                address.getLines(true)
-                        .add(String.format("Hausnummer: %s", hausnummer));
-            }
-            individual.setAddress(address);
+        boolean someAddressAttributeIsWellDefined = address1Exists ||
+                address2Exists || address3Exists || postalCodeExists || cityExists || hausnummerExists;
+
+        if (!someAddressAttributeIsWellDefined) return this;
+
+        Address address = new Address();
+
+        if (address1Exists) address.setAddr1(address1);
+        if (address2Exists) address.setAddr2(address2);
+        if (address3Exists) address.setAddr3(address3);
+        if (postalCodeExists) address.setPostalCode(postalCode);
+        if (cityExists) address.setCity(city);
+
+        if (hausnummerExists) {
+            address.getLines(true).add(String.format("Hausnummer: %s", hausnummer));
         }
+
+        individual.setAddress(address);
+
         return this;
     }
 
@@ -148,11 +142,12 @@ class IndividualBuilder {
     }
 
     IndividualBuilder source(String source) {
-        if (StringFun.notEmpty(source)) {
-            CitationWithSource citation = new CitationWithSource();
-            citation.setSource(sourceStore.createSource(source));
-            individual.getCitations(true).add(citation);
-        }
+        if (StringFun.isEmpty(source)) return this;
+
+        CitationWithSource citation = new CitationWithSource();
+        citation.setSource(sourceStore.createSource(source));
+        individual.getCitations(true).add(citation);
+
         return this;
     }
 
@@ -162,37 +157,34 @@ class IndividualBuilder {
 
     private void setEvent(IndividualEventType type, String notePrefix, String day, String month, String year,
                           String placeName, String source, String cause, String... notes) {
+
         String date = DateFormatter.format(day, month, year);
         String[] nonNullNotes = Arrays.stream(notes)
                 .filter(Objects::nonNull)
                 .toArray(String[]::new);
+
         boolean dateIsWellDefined = date != null;
         boolean placeNameExists = StringFun.notEmpty(placeName);
         boolean originalDateHasInvalidStructure = DateFormatter.hasInvalidStructure(day, month, year);
         boolean sourceExists = StringFun.notEmpty(source);
         boolean causeExists = StringFun.notEmpty(cause);
         boolean notesNotEmpty = !List.of(nonNullNotes).isEmpty();
-        if (dateIsWellDefined || placeNameExists || originalDateHasInvalidStructure || sourceExists || notesNotEmpty) {
-            IndividualEvent event = new IndividualEvent();
-            event.setType(type);
-            if (dateIsWellDefined) {
-                event.setDate(date);
-            }
-            if (placeNameExists) {
-                attachPlace(event, placeName);
-            }
-            if (originalDateHasInvalidStructure) {
-                attachDateNotes(event, notePrefix, day, month, year);
-            }
-            if (sourceExists) {
-                attachCitation(event, source);
-            }
-            if (causeExists) {
-                event.setCause(cause);
-            }
-            attachNotes(event, nonNullNotes);
-            individual.getEvents(true).add(event);
-        }
+        boolean someEventAttributeIsWellDefined = dateIsWellDefined ||
+                placeNameExists || originalDateHasInvalidStructure || sourceExists || notesNotEmpty;
+
+        if (!someEventAttributeIsWellDefined) return;
+
+        IndividualEvent event = new IndividualEvent();
+        event.setType(type);
+
+        if (dateIsWellDefined) event.setDate(date);
+        if (placeNameExists) attachPlace(event, placeName);
+        if (originalDateHasInvalidStructure) attachDateNotes(event, notePrefix, day, month, year);
+        if (sourceExists) attachCitation(event, source);
+        if (causeExists) event.setCause(cause);
+
+        attachNotes(event, nonNullNotes);
+        individual.getEvents(true).add(event);
     }
 
     private static void attachPlace(IndividualEvent event, String placeName) {
@@ -202,12 +194,7 @@ class IndividualBuilder {
     }
 
     private void attachDateNotes(IndividualEvent event, String notePrefix, String day, String month, String year) {
-        List<String> notes = new LinkedList<>();
-        if (StringFun.notEmpty(day)) notes.add("Tag: " + day);
-        if (StringFun.notEmpty(month)) notes.add("Monat: " + month);
-        if (StringFun.notEmpty(year)) notes.add("Jahr: " + year);
-        String note = notePrefix + ": " + String.join(", ", notes);
-        attachNote(event, note);
+        attachNote(event, DateFormatter.formatAsNote(notePrefix, day, month, year));
     }
 
     private void attachNotes(IndividualEvent event, String... notes) {
@@ -225,10 +212,10 @@ class IndividualBuilder {
     }
 
     private void addNote(String notePrefix, String note) {
-        if (StringFun.notEmpty(note)) {
-            var noteStructure = createNote(String.format("%s: %s", notePrefix, note));
-            individual.getNoteStructures(true).add(noteStructure);
-        }
+        if (StringFun.isEmpty(note)) return;
+
+        var noteStructure = createNote(String.format("%s: %s", notePrefix, note));
+        individual.getNoteStructures(true).add(noteStructure);
     }
 
     private NoteStructure createNote(String note) {
@@ -239,11 +226,11 @@ class IndividualBuilder {
     }
 
     private void setAttribute(IndividualAttributeType type, String description) {
-        if (StringFun.notEmpty(description)) {
-            var attribute = new IndividualAttribute();
-            attribute.setType(type);
-            attribute.setDescription(description);
-            individual.getAttributes(true).add(attribute);
-        }
+        if (StringFun.isEmpty(description)) return;
+
+        var attribute = new IndividualAttribute();
+        attribute.setType(type);
+        attribute.setDescription(description);
+        individual.getAttributes(true).add(attribute);
     }
 }

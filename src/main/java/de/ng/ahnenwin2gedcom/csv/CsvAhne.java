@@ -12,7 +12,7 @@ public class CsvAhne {
     private final Map<AhnenColumn, Object> ahnenColumns = new HashMap<>();
     private final Set<CsvPartnerVerbindung> partnerVerbindungen = new HashSet<>();
 
-    public CsvAhne(List<CSVRecord> records) {
+    CsvAhne(List<CSVRecord> records) {
         CSVRecord mainRecord = records.get(0);
         setColumnValues(mainRecord);
         setPartnerVerbindungen(records);
@@ -31,13 +31,12 @@ public class CsvAhne {
 
     private void setColumnValue(AhnenColumn column, CSVRecord record) {
         String value;
+
         try {
             value = record.get(column.getCsvValue());
-        } catch (IllegalArgumentException ignore) {
+        }
+        catch (IllegalArgumentException ignore) {
             value = null;
-        } catch (IllegalStateException exception) {
-            value = null;
-            LOG.error("IllegalStateException wurde geworfen. Das hätte nicht passieren dürfen.", exception);
         }
 
         if (column.getDatatype() == int.class) {
@@ -45,17 +44,22 @@ public class CsvAhne {
                 throw new IllegalStateException("Column datatype was int, but provided value was null.");
             }
             ahnenColumns.put(column, Integer.parseInt(value));
+            return;
         }
-        else if (column.getDatatype() == String.class) {
+
+        if (column.getDatatype() == String.class) {
             ahnenColumns.put(column, value);
+            return;
         }
-        else if (column.getDatatype() == Geschlecht.class) {
+
+        if (column.getDatatype() == Geschlecht.class) {
             ahnenColumns.put(column, Geschlecht.findByCsvValue(value));
+            return;
         }
-        else {
-            LOG.error("AhnenColumn {} has unhandled datatype {} for a CsvAhne.",
-                    column, column.getDatatype().getSimpleName());
-        }
+
+        LOG.error("AhnenColumn {} has unhandled datatype {} for a CsvAhne.",
+                column, column.getDatatype().getSimpleName());
+
     }
 
     public String getString(AhnenColumn key) {

@@ -6,6 +6,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -81,12 +83,21 @@ class DateFormatter {
                 .orElse(null);
     }
 
+    static String formatAsNote(String notePrefix, String day, String month, String year) {
+        List<String> notes = new LinkedList<>();
+        if (StringFun.notEmpty(day)) notes.add("Tag: " + day);
+        if (StringFun.notEmpty(month)) notes.add("Monat: " + month);
+        if (StringFun.notEmpty(year)) notes.add("Jahr: " + year);
+        return notePrefix + ": " + String.join(", ", notes);
+    }
+
     private static Optional<Integer> parseIntegerValue(String value) {
         if (StringFun.isEmpty(value)) return Optional.empty();
         Integer intValue;
         try {
             intValue = Integer.parseInt(value);
-        } catch (NumberFormatException ignore) {
+        }
+        catch (NumberFormatException ignore) {
             intValue = null;
         }
         return Optional.ofNullable(intValue);

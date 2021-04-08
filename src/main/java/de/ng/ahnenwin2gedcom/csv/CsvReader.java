@@ -14,14 +14,13 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class CsvReader {
-    private static final Predicate<CSVRecord> filterOutLinesWithoutNummerColumn =
+    private static final Predicate<CSVRecord> nummerColumnExists =
             csvRecord -> {
                 try {
-                    Integer.parseInt(csvRecord.get(AhnenColumn.NUMMER.getCsvValue()));
+                    csvRecord.get(AhnenColumn.NUMMER.getCsvValue());
                     return true;
-                } catch (NumberFormatException ignore) {
-                    return true;
-                } catch (IllegalArgumentException ignore) {
+                }
+                catch (IllegalArgumentException ignore) {
                     return false;
                 }
             };
@@ -30,12 +29,14 @@ public class CsvReader {
     public static Set<CsvAhne> read(String path) throws IOException {
         Charset ansel = Charset.forName("windows-1252");
         Reader in = new FileReader(path, ansel);
+
         Iterable<CSVRecord> recordsIterable = CSVFormat.TDF
                 .withHeader(header())
                 .withQuote(null)
                 .parse(in);
+
         CSVRecord[] records = StreamSupport.stream(recordsIterable.spliterator(), false)
-                .filter(filterOutLinesWithoutNummerColumn)
+                .filter(nummerColumnExists)
                 .toArray(CSVRecord[]::new);
 
         return groupByNummer(records)
@@ -47,19 +48,20 @@ public class CsvReader {
 
     private static Map<Integer, List<CSVRecord>> groupByNummer(CSVRecord[] records) {
         Map<Integer, List<CSVRecord>> groupedRecords = new HashMap<>();
+
         for (int recordIndex = 0; recordIndex < records.length; ++recordIndex) {
             Integer nummer = getAhnenNummer(records, recordIndex);
-            if (nummer != null) {
-                groupedRecords
-                        .computeIfAbsent(nummer, ignore -> new LinkedList<>())
-                        .add(records[recordIndex]);
-            }
+            if (nummer == null) continue;
+            groupedRecords
+                    .computeIfAbsent(nummer, ignore -> new LinkedList<>())
+                    .add(records[recordIndex]);
         }
+
         return groupedRecords;
     }
 
     private static Integer getAhnenNummer(CSVRecord[] records, int recordIndex) {
-        Integer nummer = getAhnenNummer(records[recordIndex]);
+        Integer nummer = parseNummer(records[recordIndex]);
         return recordIndex == 0
                 ? null
                 : nummer == null
@@ -67,7 +69,7 @@ public class CsvReader {
                     : nummer;
     }
 
-    private static Integer getAhnenNummer(CSVRecord record) {
+    private static Integer parseNummer(CSVRecord record) {
         try {
             return Integer.parseInt(record.get(AhnenColumn.NUMMER.getCsvValue()));
         } catch (NumberFormatException ignore) {

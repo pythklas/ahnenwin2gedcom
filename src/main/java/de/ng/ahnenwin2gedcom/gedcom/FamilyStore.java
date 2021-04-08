@@ -20,7 +20,7 @@ class FamilyStore {
     Family createFamilyIfNotExists(HusbandWifeRef husbandWifeRef) {
         Family family = store.get(husbandWifeRef);
         if (family == null) {
-            family = new FamilyBuilder(sourceStore, noteStore)
+            family = new FamilyBuilder(noteStore)
                     .xref(familySequence.next())
                     .husband(husbandWifeRef.getHusbandId())
                     .wife(husbandWifeRef.getWifeId())

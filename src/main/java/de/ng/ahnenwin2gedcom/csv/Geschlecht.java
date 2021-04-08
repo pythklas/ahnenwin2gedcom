@@ -1,6 +1,7 @@
 package de.ng.ahnenwin2gedcom.csv;
 
 import java.util.Arrays;
+import java.util.List;
 
 public enum Geschlecht {
     MAENNLICH("m", "M"),
@@ -15,7 +16,7 @@ public enum Geschlecht {
     static Geschlecht findByCsvValue(String csvValue) {
         String trimmedCsvValue = csvValue == null ? "" : csvValue.trim();
         return Arrays.stream(values())
-                .filter(geschlecht -> Arrays.asList(geschlecht.csvValues).contains(trimmedCsvValue))
+                .filter(geschlecht -> List.of(geschlecht.csvValues).contains(trimmedCsvValue))
                 .findAny()
                 .orElse(Geschlecht.UNBEKANNT);
     }

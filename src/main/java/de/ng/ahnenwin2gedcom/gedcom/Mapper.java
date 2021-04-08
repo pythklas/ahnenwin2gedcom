@@ -23,10 +23,12 @@ class Mapper {
         this.familyStore = new FamilyStore(noteStore, sourceStore);
     }
 
-    List<Individual> toIndividuals(Collection<CsvAhne> csvAhnen) {
+    Map<String, Individual> toIndividuals(Collection<CsvAhne> csvAhnen) {
         return csvAhnen.stream()
                 .map(this::toIndividual)
-                .collect(Collectors.toList());
+                .collect(Collectors.toMap(
+                        Individual::getXref,
+                        individual -> individual));
     }
 
     private Individual toIndividual(CsvAhne csvAhne) {
@@ -122,7 +124,7 @@ class Mapper {
 
     private void addFamilyEvents(Family family, CsvPartnerVerbindung partner) {
         Verbindung verbindung = partner.getVerbindung();
-        FamilyBuilder familyBuilder = new FamilyBuilder(family, sourceStore, noteStore);
+        FamilyBuilder familyBuilder = new FamilyBuilder(family, noteStore);
         switch (verbindung) {
             case EHESCHLIESSUNG:
                 addKirchlicheHochzeit(familyBuilder, partner);
@@ -242,7 +244,7 @@ class Mapper {
         List<Integer> childIds = children.stream()
                 .map(child -> child.getInt(AhnenColumn.NUMMER))
                 .collect(Collectors.toList());
-        new FamilyBuilder(family, sourceStore, noteStore)
+        new FamilyBuilder(family, noteStore)
                 .addChildren(childIds);
     }
 }

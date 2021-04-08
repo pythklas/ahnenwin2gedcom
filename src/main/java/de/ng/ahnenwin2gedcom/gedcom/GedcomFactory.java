@@ -4,7 +4,6 @@ import de.ng.ahnenwin2gedcom.csv.CsvAhne;
 import org.gedcom4j.model.*;
 
 import java.util.Collection;
-import java.util.List;
 
 public class GedcomFactory {
 
@@ -12,13 +11,14 @@ public class GedcomFactory {
         Gedcom gedcom = new Gedcom();
         NoteStore notes = new NoteStore();
         SourceStore sources = new SourceStore();
-        notes.createNote("created by ahnenwin2gedom"); // TODO: in header (mit getNoteStructure) erzeugen und in notestore speichern.
         Mapper map = new Mapper(notes, sources);
-        setIndividuals(gedcom, map.toIndividuals(csvAhnen));
+
+        gedcom.getIndividuals().putAll(map.toIndividuals(csvAhnen));
         gedcom.getFamilies().putAll(map.toFamilies(csvAhnen));
         gedcom.setHeader(header(notes));
         gedcom.getNotes().putAll(notes.getAll());
         gedcom.getSources().putAll(sources.getAll());
+
         return gedcom;
     }
 
@@ -43,13 +43,5 @@ public class GedcomFactory {
         noteStructure.setNoteReference(note);
         header.getNoteStructures(true).add(noteStructure);
         return header;
-    }
-
-    private static void setIndividuals(Gedcom gedcom, List<Individual> individuals) {
-        for (var individual : individuals) setIndividual(gedcom, individual);
-    }
-
-    private static void setIndividual(Gedcom gedcom, Individual individual) {
-        gedcom.getIndividuals().put(individual.getXref(), individual);
     }
 }

@@ -24,24 +24,25 @@ public class CsvPartnerVerbindung {
 
     private void setColumn(VerbindungsColumn column, CSVRecord record) {
         String value;
+
         try {
             value = record.get(column.getCsvValue());
         } catch (IllegalArgumentException ignore) {
             value = null;
-        } catch (IllegalStateException exception) {
-            value = null;
-            LOG.error("IllegalStateException wurde geworfen. Das hätte nicht passieren dürfen.", exception);
         }
+
         if (column.getDatatype() == String.class) {
             columns.put(column, value);
+            return;
         }
-        else if (column.getDatatype() == Verbindung.class) {
+
+        if (column.getDatatype() == Verbindung.class) {
             columns.put(column, Verbindung.findByCsvValue(value));
+            return;
         }
-        else {
-            LOG.error("AhnenColumn {} has unhandled datatype {} for a CsvAhne.",
-                    column, column.getDatatype().getSimpleName());
-        }
+
+        LOG.error("AhnenColumn {} has unhandled datatype {} for a CsvAhne.",
+                column, column.getDatatype().getSimpleName());
     }
 
     public String getString(VerbindungsColumn verbindungsColumn) {

@@ -12,17 +12,15 @@ class FamilyBuilder {
             Set.of(FamilyEventType.MARRIAGE, FamilyEventType.EVENT);
 
     private final Family family;
-    private final SourceStore sourceStore; //TODO: ausbauen oder ueberpruefen ob hier noch gebraucht...
     private final NoteStore noteStore;
 
-    FamilyBuilder(Family family, SourceStore sourceStore, NoteStore noteStore) {
-        this.sourceStore = sourceStore;
+    FamilyBuilder(Family family, NoteStore noteStore) {
         this.noteStore = noteStore;
         this.family = family;
     }
 
-    FamilyBuilder(SourceStore sourceStore, NoteStore noteStore) {
-        this(new Family(), sourceStore, noteStore);
+    FamilyBuilder(NoteStore noteStore) {
+        this(new Family(), noteStore);
     }
 
     FamilyBuilder xref(String xref) {
@@ -90,26 +88,26 @@ class FamilyBuilder {
 
     private void setEvent(FamilyEventType type, String subType, String day, String month, String year, String placeName) {
         String date = DateFormatter.format(day, month, year);
+
         boolean dateIsWellDefined = date != null;
         boolean placeNameExists = StringFun.notEmpty(placeName);
         boolean originalDateHasInvalidStructure = DateFormatter.hasInvalidStructure(day, month, year);
-        if (dateIsWellDefined || placeNameExists || originalDateHasInvalidStructure) {
-            FamilyEvent event = new FamilyEvent();
-            event.setType(type);
-            if (dateIsWellDefined) {
-                event.setDate(date);
-            }
-            if (placeNameExists) {
-                attachPlace(event, placeName);
-            }
-            if (originalDateHasInvalidStructure) {
-                attachDateNotes(event, subType, day, month, year);
-            }
-            if (typesWithRelevantSubtypes.contains(type)) {
-                event.setSubType(subType);
-            }
-            family.getEvents(true).add(event);
-        }
+        boolean atLeastOneEventAttributeIsWellDefined = dateIsWellDefined || placeNameExists || originalDateHasInvalidStructure;
+
+        if(!atLeastOneEventAttributeIsWellDefined) return;
+
+        FamilyEvent event = new FamilyEvent();
+        event.setType(type);
+
+        if (dateIsWellDefined) event.setDate(date);
+
+        if (placeNameExists) attachPlace(event, placeName);
+
+        if (originalDateHasInvalidStructure) attachDateNotes(event, subType, day, month, year);
+
+        if (typesWithRelevantSubtypes.contains(type)) event.setSubType(subType);
+
+        family.getEvents(true).add(event);
     }
 
     private static void attachPlace(FamilyEvent event, String placeName) {
@@ -119,13 +117,7 @@ class FamilyBuilder {
     }
 
     private void attachDateNotes(FamilyEvent event, String notePrefix, String day, String month, String year) {
-        // TODO: Code duplication loswerden
-        List<String> notes = new LinkedList<>();
-        if (StringFun.notEmpty(day)) notes.add("Tag: " + day);
-        if (StringFun.notEmpty(month)) notes.add("Monat: " + month);
-        if (StringFun.notEmpty(year)) notes.add("Jahr: " + year);
-        String note = notePrefix + ": " + String.join(", ", notes);
-        attachNote(event, note);
+        attachNote(event, DateFormatter.formatAsNote(notePrefix, day, month, year));
     }
 
     private void attachNote(FamilyEvent event, String note) {
