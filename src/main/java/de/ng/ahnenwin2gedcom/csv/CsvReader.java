@@ -26,6 +26,14 @@ public class CsvReader {
             };
 
 
+    /**
+     * Reads the given ahnenwin 5 excel export file and maps it to a list of CsvAhne.
+     * Note that the file actually is a tab separated csv file.
+     * @param path The path of the ahnenwin 5 excel export file.
+     * @return A list of CsvAhnen where each CsvAhne corresponds to an entry in the file.
+     * Note that an entry can span several rows.
+     * @throws IOException when there is a problem reading the file.
+     */
     public static Set<CsvAhne> read(String path) throws IOException {
         Charset ansel = Charset.forName("windows-1252");
         Reader in = new FileReader(path, ansel);
