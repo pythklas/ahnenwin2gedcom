@@ -41,9 +41,7 @@ internal class FamilyStore(private val sourceStore: SourceStore, private val ind
     fun createFamilyIfNotExists(hejBeziehung: HejBeziehung): Family? {
         val partnerPair = PartnerPair(hejBeziehung)
         if (partnerPair == PartnerPair.NO_PARENTS) {
-            logger().error("Die hejBeziehung $hejBeziehung hat nicht alle Eltern als Partner angegeben." +
-                    " Das hätte nicht passieren dürfen." +
-                    " Bitte an den Entwickler melden.")
+            logger().debug("Die hejBeziehung $hejBeziehung hat keine Eltern als Partner angegeben.")
             return null
         }
         val family = store[partnerPair]

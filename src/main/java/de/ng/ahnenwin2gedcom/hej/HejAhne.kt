@@ -101,12 +101,15 @@ class HejAhne internal constructor(record: CSVRecord) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other == null || javaClass != other.javaClass) return false
-        val hejAhne = other as HejAhne
-        return properties == hejAhne.properties
+        if (other !is HejAhne) return false
+        return properties == other.properties
     }
 
     override fun hashCode(): Int {
         return Objects.hash(properties)
+    }
+
+    override fun toString(): String {
+        return properties.toString()
     }
 }
