@@ -51,12 +51,12 @@ Folgende Programme können erfolgreich die von diesem Tool erzeugte Gedcom-Datei
  * Windows (10?)
  * Eine Installation von Visual Studio (2017 oder neuer) mit Visual Studio C++ (Community Edition).
  * Maven 3
- * GraalVM Java 16 JDK mit native-image.exe (https://www.graalvm.org/docs/getting-started/windows/).
+ * GraalVM Java 11 JDK mit native-image.exe (https://www.graalvm.org/docs/getting-started/windows/).
 
 
 ### Anleitung
  * Checke dieses Repository auf einem Windows-System aus.
- * Stelle sicher, dass die Umgebungsvariable JAVA_HOME auf die GraalVM Java 16 JDK gesetzt ist.
+ * Stelle sicher, dass die Umgebungsvariable JAVA_HOME auf die GraalVM Java 11 JDK gesetzt ist.
  * Starte die _x64 Native Tools Command Prompt for VS_, die bei der Installation von Visual Studio enthalten ist.
  * Navigiere in der Command Prompt in das ausgecheckte Projekt (_cd path\to\project_).
  * Führe den Befehl _mvn clean package -Pnative-image_ aus.
