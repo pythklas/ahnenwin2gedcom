@@ -1,16 +1,17 @@
 package de.ng.ahnenwin2gedcom.hej
 
 import de.ng.ahnenwin2gedcom.hej.Geschlecht.Companion.findByCsvValue
-import de.ng.ahnenwin2gedcom.helperfunctions.StringFun.notEmpty
+import de.ng.ahnenwin2gedcom.helperfunctions.StringFun.isEmpty
 import de.ng.ahnenwin2gedcom.logger
 import org.apache.commons.csv.CSVRecord
 import java.util.*
+import kotlin.reflect.KClass
+import kotlin.reflect.cast
 
 class HejAhne internal constructor(record: CSVRecord) {
 
     companion object {
         /**
-         * TODO Refactor an fachlich besseren Ort?
          * Ein record aus der hej-Datei kann 50 oder 51 Werte haben.
          * Falls sie nur 50 Werte hat, wird nach aktuellem Kenntnisstand das Text-Feld ausgelassen.
          * Deswegen muss ab dem Text-Feld fuer jedes Feld vom Index aus dem Enum [AhnenProperty] 1 abgezogen werden.
@@ -21,15 +22,22 @@ class HejAhne internal constructor(record: CSVRecord) {
             if (numberOfValues == 50) return true
             if (numberOfValues == 51) return false
             logger().error(
-                "Record with Ahnennummer {} has {} values. Cannot handle this amount of values. Please report this error to the developer.",
+                "Record with Ahnennummer {} has {} values. Cannot handle this amount of values. " +
+                        "Please report this error to the developer.",
                 record[0],
                 numberOfValues
             )
             return false
         }
+
+        private fun splitByDLEDelimiter(text: String): Array<String> {
+            var values = text.split(HejDelimiter.DLE.charValue).toTypedArray()
+            values = values.sliceArray(1 until values.size)
+            return values
+        }
     }
 
-    private val properties = mutableMapOf<AhnenProperty, Any?>()
+    private val properties = mutableMapOf<AhnenProperty, Any>()
 
     init {
         val applyIndexShift = mustApplyIndexShift(record)
@@ -42,67 +50,62 @@ class HejAhne internal constructor(record: CSVRecord) {
         var index = property.columnIndex
         if (applyIndexShift && AhnenProperty.TEXT.columnIndex < index) --index
         if (applyIndexShift && AhnenProperty.TEXT == property) return
+
         val value: String? = try {
             record[index]
         } catch (ignore: IllegalArgumentException) {
             null
         }
-        if (property.datatype == Int::class.java) {
-            checkNotNull(value) { "AhnenProperty datatype was int, but provided value was null." }
-            properties[property] = value.toInt()
+
+        if (property.required && value == null) {
+            logger().error("Die Ahneneigenschaft $property wird benötigt, " +
+                    "aber der CSVRecord $record enthält dafür keinen Wert. " +
+                    "Der Ahne kann nicht nach Gedcom übertragen werden.")
             return
         }
-        if (property.datatype == String::class.java) {
-            if (notEmpty(value)) properties[property] = value
-            return
-        }
-        if (property.datatype == Geschlecht::class.java) {
-            if (notEmpty(value)) properties[property] = findByCsvValue(value)
-            return
-        }
-        if (property.datatype == Array<String>::class.java) {
-            if (notEmpty(value)) {
-                var values = value!!.split(HejDelimiter.DLE.charValue.toString().toRegex()).toTypedArray()
-                values = values.copyOfRange(1, values.size)
-                properties[property] = values
-            }
-            return
-        }
-        logger().error(
-            "AhnenProperty {} has unhandled datatype {} for HejAhne with id {}.",
-            property, property.datatype.simpleName, record[0]
-        )
+
+        if (isEmpty(value)) return
+
+        properties[property] = when(property.datatype) {
+            Int::class -> value!!.toInt()
+            String::class -> value
+            Geschlecht::class -> findByCsvValue(value)
+            Array<String>::class -> splitByDLEDelimiter(value!!)
+            else -> logger().error("AhnenEigenschaft $property hat den unbehandelten Datentyp " +
+                    "${property.datatype.simpleName} für HejAhne mit ID ${record[0]}. " +
+                    "Bitte an den Entwickler melden.")
+        } ?: return
     }
 
-    fun getStringArray(key: AhnenProperty): Array<String?> {
-        return get(key, Array<String?>::class.java)
-    }
-
-    fun getString(key: AhnenProperty): String {
-        return get(key, String::class.java)
-    }
-
-    val geschlecht: Geschlecht
-        get() = get(AhnenProperty.GESCHLECHT, Geschlecht::class.java)
-
-    fun getInt(key: AhnenProperty): Int {
-        if (key.datatype == Int::class.javaPrimitiveType) {
-            return properties[key] as Int
+    fun getString(key: AhnenProperty) = get(key, String::class)
+    fun getRequiredInt(key: AhnenProperty): Int {
+        if (!key.required) {
+            throw IllegalArgumentException("$key is not a required AhnenProperty")
         }
-        throw RuntimeException("Requires datatype ${Int::class.java}, but was ${key.datatype}")
+        return get(key, Int::class)!!
     }
+    fun getStringArray(key: AhnenProperty) = get(key, Array<String>::class)
 
-    private operator fun <T> get(key: AhnenProperty, requiredDatatype: Class<T>): T {
+    val geschlecht
+        get() = get(AhnenProperty.GESCHLECHT, Geschlecht::class)
+
+    private fun <T: Any> get(key: AhnenProperty, requiredDatatype: KClass<T>): T? {
         if (key.datatype == requiredDatatype) {
-            return requiredDatatype.cast(properties[key])
+            try {
+                return requiredDatatype.cast(properties[key])
+            } catch (e: ClassCastException) {
+                if (properties[key] == null) return null
+                logger().error("Could not cast property $key with value ${properties[key]} " +
+                        "to class ${requiredDatatype.simpleName}", e)
+                throw e
+            }
         }
-        throw RuntimeException("Requires datatype $requiredDatatype, but was ${key.datatype}")
+        throw RuntimeException("Benötigt Datentyp $requiredDatatype, war aber ${key.datatype}." +
+                "Das hätte nicht passieren dürfen. Bitte an den Entwickler melden.")
     }
 
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is HejAhne) return false
-        return properties == other.properties
+        return this === other || (other is HejAhne && properties == other.properties)
     }
 
     override fun hashCode(): Int {

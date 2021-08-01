@@ -9,6 +9,6 @@ internal data class ParentsRef(val papaId: Int, val mamaId: Int) {
     }
 
     constructor(hejAhne: HejAhne) :
-            this(hejAhne.getInt(AhnenProperty.VATER),
-                hejAhne.getInt(AhnenProperty.MUTTER))
+            this(hejAhne.getRequiredInt(AhnenProperty.VATER),
+                hejAhne.getRequiredInt(AhnenProperty.MUTTER))
 }

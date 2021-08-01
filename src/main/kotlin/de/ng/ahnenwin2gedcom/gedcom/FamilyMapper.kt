@@ -141,7 +141,7 @@ internal class FamilyMapper(private val sourceStore: SourceStore,
 
     private fun addChildren(parentsRef: ParentsRef, children: List<HejAhne>) {
         val family = familyStore[parentsRef] ?: return
-        val childIds = children.map { it.getInt(AhnenProperty.NUMMER) }
+        val childIds = children.map { it.getRequiredInt(AhnenProperty.NUMMER) }
         FamilyBuilder(family, sourceStore, individualStore).addChildren(childIds)
     }
 }

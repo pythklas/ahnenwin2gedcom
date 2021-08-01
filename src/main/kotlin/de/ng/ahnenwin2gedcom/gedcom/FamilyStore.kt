@@ -56,8 +56,8 @@ internal class FamilyStore(private val sourceStore: SourceStore, private val ind
     }
 
     private fun husbandWifeRef(hejBeziehung: HejBeziehung): HusbandWifeRef? {
-        val partner1Id = hejBeziehung.getInt(BeziehungsProperty.PARTNER_1)
-        val partner2Id = hejBeziehung.getInt(BeziehungsProperty.PARTNER_2)
+        val partner1Id = hejBeziehung.getRequiredInt(BeziehungsProperty.PARTNER_1)
+        val partner2Id = hejBeziehung.getRequiredInt(BeziehungsProperty.PARTNER_2)
         val partner1Xref = XrefFormatter.format(partner1Id)
         val partner2Xref = XrefFormatter.format(partner2Id)
         val partner1 = individualStore[partner1Xref]

@@ -11,8 +11,8 @@ internal data class PartnerPair(val partner1: Int, val partner2: Int) {
     }
 
     constructor(hejBeziehung: HejBeziehung) :
-            this(hejBeziehung.getInt(BeziehungsProperty.PARTNER_1),
-                hejBeziehung.getInt(BeziehungsProperty.PARTNER_2))
+            this(hejBeziehung.getRequiredInt(BeziehungsProperty.PARTNER_1),
+                hejBeziehung.getRequiredInt(BeziehungsProperty.PARTNER_2))
 
     constructor(parentsRef: ParentsRef) : this(parentsRef.papaId, parentsRef.mamaId)
 

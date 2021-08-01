@@ -156,11 +156,9 @@ internal class IndividualBuilder(private val individual: Individual, private val
         return this
     }
 
-    fun textAsNote(text: Array<String?>?): IndividualBuilder {
-        if (text == null) return this
-        val textNotNull = text.filterNotNull().toTypedArray()
-        if (textNotNull.isEmpty()) return this
-        val note = NoteStructureFactory.create(*textNotNull)
+    fun textAsNote(text: Array<String>?): IndividualBuilder {
+        if (text == null || text.isEmpty()) return this
+        val note = NoteStructureFactory.create(*text)
         individual.getNoteStructures(true).add(note)
         return this
     }

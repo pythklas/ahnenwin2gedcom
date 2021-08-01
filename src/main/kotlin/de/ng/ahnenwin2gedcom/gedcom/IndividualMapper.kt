@@ -13,7 +13,7 @@ internal class IndividualMapper(private val sourceStore: SourceStore, private va
 
     private fun createIndividual(ahne: HejAhne) {
         val individual = IndividualBuilder(sourceStore)
-            .xref(ahne.getInt(AhnenProperty.NUMMER))
+            .xref(ahne.getRequiredInt(AhnenProperty.NUMMER))
             .name(
                 ahne.getString(AhnenProperty.VORNAMEN),
                 ahne.getString(AhnenProperty.NACHNAME),

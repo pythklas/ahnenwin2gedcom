@@ -11,7 +11,6 @@ object ListFun {
      * @param splitCondition The condition that returns true iff it should be a splitting point.
      * @return The split list as a list of lists. The used list implementation for the outer and inner lists is [LinkedList].
      */
-    @JvmStatic
     fun <T> splitWhereTrue(list: List<T>, splitCondition: Predicate<T>): List<List<T>> {
         val result: MutableList<MutableList<T>> = LinkedList()
         result.add(0, LinkedList<T>())

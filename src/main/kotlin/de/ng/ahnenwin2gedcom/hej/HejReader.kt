@@ -4,14 +4,12 @@ import de.ng.ahnenwin2gedcom.helperfunctions.ListFun.splitWhereTrue
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVRecord
 import java.io.FileReader
-import java.io.IOException
 import java.nio.charset.Charset
 
 object HejReader {
 
     private val heyRowDelimiters = arrayOf("mrg", "adop", "ortv", "quellv")
 
-    @Throws(IOException::class)
     fun read(path: String): HejData {
         val reader = FileReader(path, Charset.forName("windows-1252"))
         val records = CSVFormat.TDF

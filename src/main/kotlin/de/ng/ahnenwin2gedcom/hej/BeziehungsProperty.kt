@@ -1,11 +1,14 @@
 package de.ng.ahnenwin2gedcom.hej
 
+import kotlin.reflect.KClass
+
 enum class BeziehungsProperty constructor(
-    val columnIndex: Int,
-    val datatype: Class<*> = String::class.java
+    internal val columnIndex: Int,
+    internal val datatype: KClass<*> = String::class,
+    internal val required: Boolean = false
 ) {
-    PARTNER_1(0, Int::class.java),
-    PARTNER_2(1, Int::class.java),
+    PARTNER_1(0, datatype = Int::class, required = true),
+    PARTNER_2(1, datatype = Int::class, required = true),
     HOCHZEIT_TAG_KIRCHE(2),
     HOCHZEIT_MONAT_KIRCHE(3),
     HOCHZEIT_JAHR_KIRCHE(4),
@@ -16,7 +19,7 @@ enum class BeziehungsProperty constructor(
     HOCHZEIT_JAHR_STANDESAMT(9),
     HOCHZEIT_ORT_STANDESAMT(10),
     HOCHZEIT_TRAUZEUGEN_STANDESAMT(11),
-    VERBINDUNG(12, Verbindung::class.java),
+    VERBINDUNG(12, datatype = Verbindung::class),
     SCHEIDUNG_TAG(13),
     SCHEIDUNG_MONAT(14),
     SCHEIDUNG_JAHR(15),

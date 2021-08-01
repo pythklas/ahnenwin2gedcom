@@ -1,16 +1,19 @@
 package de.ng.ahnenwin2gedcom.hej
 
-enum class AhnenProperty constructor(
-    val columnIndex: Int,
-    val datatype: Class<*> = String::class.java
+import kotlin.reflect.KClass
+
+enum class AhnenProperty(
+    internal val columnIndex: Int,
+    internal val datatype: KClass<*> = String::class,
+    internal val required: Boolean = false
 ) {
-    NUMMER(0, Int::class.java),
-    VATER(1, Int::class.java),
-    MUTTER(2, Int::class.java),
+    NUMMER(0, datatype = Int::class, required = true),
+    VATER(1, datatype = Int::class, required = true),
+    MUTTER(2, datatype = Int::class, required = true),
     NACHNAME(3),
     VORNAMEN(4),
     RUFNAME(50),
-    GESCHLECHT(5, Geschlecht::class.java),
+    GESCHLECHT(5, datatype = Geschlecht::class),
     RELIGION(6),
     BERUF(7),
     GEBURTSTAG(8),
@@ -37,7 +40,7 @@ enum class AhnenProperty constructor(
     TAUFE_QUELLE(28),
     STERBEQUELLE(29),
     BEERDIGUNG_QUELLE(30),
-    TEXT(31, Array<String>::class.java),
+    TEXT(31, datatype = Array<String>::class),
     LEBT(32),
     SCHREIBWEISE(33),
     HOFNAME(36),
@@ -47,5 +50,5 @@ enum class AhnenProperty constructor(
     ADRESSE_ORT(40),
     ADRESSE_ZUSATZ(41),
     STERBEALTER(45),
-    TELEFON(46);
+    TELEFON(46)
 }
