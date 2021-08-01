@@ -18,6 +18,6 @@ internal class SourceStore {
         return source
     }
 
-    val all: Map<String, Source>
+    val all
         get() = store
 }

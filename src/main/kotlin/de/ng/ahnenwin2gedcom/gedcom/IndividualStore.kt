@@ -19,10 +19,8 @@ internal class IndividualStore {
         store[xref] = individual
     }
 
-    operator fun get(xref: String): Individual? {
-        return store[xref]
-    }
+    operator fun get(xref: String) = store[xref]
 
-    val all: Map<String, Individual>
+    val all
         get() = store
 }

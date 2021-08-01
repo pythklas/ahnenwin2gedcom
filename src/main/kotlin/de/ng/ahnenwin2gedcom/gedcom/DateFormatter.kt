@@ -8,13 +8,15 @@ import java.util.*
 
 internal object DateFormatter {
 
+    private val MONTH_ABBREVIATIONS = arrayOf("JAN", "FEB", "MAR", "APR",
+            "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
+
     private val dateTimeFormatter = DateTimeFormatterBuilder()
         .parseCaseInsensitive()
         .appendPattern("d MMM y")
         .toFormatter()
         .withLocale(Locale.ENGLISH)
 
-    @JvmStatic
     fun format(day: String?, month: String?, year: String?): String? {
         var date: String? = null
         val formattedYear = year?.let { formatYear(it) }
@@ -32,7 +34,6 @@ internal object DateFormatter {
         return date
     }
 
-    @JvmStatic
     fun hasInvalidStructure(day: String?, month: String?, year: String?): Boolean {
         val formattedDay = day?.let { formatDay(it) }
         val formattedMonth = month?.let { formatMonth(it) }
@@ -65,14 +66,13 @@ internal object DateFormatter {
 
     private fun formatMonth(monthNumber: String): String? {
         val monthInt = parseIntegerValue(monthNumber).takeIf { it in 1..12 } ?: return null
-        return DateFormat.MONTH_ABBREVIATIONS[monthInt - 1]
+        return MONTH_ABBREVIATIONS[monthInt - 1]
     }
 
     private fun formatYear(year: String): String? {
         return parseIntegerValue(year)?.toString()
     }
 
-    @JvmStatic
     fun formatAsNote(notePrefix: String, day: String?, month: String?, year: String?): String {
         val notes: MutableList<String> = LinkedList()
         if (notEmpty(day)) notes.add("Tag: $day")

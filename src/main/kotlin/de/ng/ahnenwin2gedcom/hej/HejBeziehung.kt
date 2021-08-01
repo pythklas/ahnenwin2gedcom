@@ -13,13 +13,11 @@ class HejBeziehung internal constructor(record: CSVRecord) {
     private val properties = mutableMapOf<BeziehungsProperty, Any>()
 
     init {
-        for (property in BeziehungsProperty.values()) {
-            setProperty(property, record)
-        }
+        BeziehungsProperty.values().forEach { setProperty(it, record) }
     }
 
     private fun setProperty(property: BeziehungsProperty, record: CSVRecord) {
-        val value: String? = try {
+        val value = try {
             record[property.columnIndex]
         } catch (ignore: IllegalArgumentException) {
             null
@@ -35,7 +33,7 @@ class HejBeziehung internal constructor(record: CSVRecord) {
         if (isEmpty(value)) return
 
         properties[property] = when (property.datatype) {
-            Int::class -> value?.toInt()
+            Int::class -> value!!.toInt()
             String::class -> value
             Verbindung::class -> findByCsvValue(value)
             else -> logger().error("AhnenEigenschaft $property hat den unbehandelten Datentyp " +
@@ -45,6 +43,7 @@ class HejBeziehung internal constructor(record: CSVRecord) {
     }
 
     fun getString(key: BeziehungsProperty) = get(key, String::class)
+
     fun getRequiredInt(key: BeziehungsProperty): Int {
         if (!key.required) {
             throw IllegalArgumentException("$key is not a required BeziehungsProperty.")
@@ -56,29 +55,27 @@ class HejBeziehung internal constructor(record: CSVRecord) {
         get() = get(BeziehungsProperty.VERBINDUNG, Verbindung::class)
 
     private fun <T : Any> get(key: BeziehungsProperty, requiredDatatype: KClass<T>): T? {
-        if (key.datatype == requiredDatatype) {
-            try {
-                return requiredDatatype.cast(properties[key])
-            } catch (e: ClassCastException) {
-                if (properties[key] == null) return null
-                logger().error("Could not cast property $key with value ${properties[key]} " +
-                        "to class ${requiredDatatype.simpleName}", e)
-                throw e
-            }
+        if (key.datatype != requiredDatatype) {
+            throw RuntimeException("Benötigt Datentyp $requiredDatatype, war aber ${key.datatype}." +
+                    "Das hätte nicht passieren dürfen. Bitte an den Entwickler melden.")
         }
-        throw RuntimeException("Benötigt Datentyp $requiredDatatype, war aber ${key.datatype}." +
-                "Das hätte nicht passieren dürfen. Bitte an den Entwickler melden.")
+
+        if (properties[key] == null) return null
+
+        return try {
+            requiredDatatype.cast(properties[key])
+        } catch (classCastException: ClassCastException) {
+            logger().error("Could not cast property $key with value ${properties[key]} " +
+                    "to class ${requiredDatatype.simpleName}", classCastException)
+            null
+        }
     }
 
     override fun equals(other: Any?): Boolean {
         return this === other || (other is HejBeziehung && properties == other.properties)
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(properties)
-    }
+    override fun hashCode() = Objects.hash(properties)
 
-    override fun toString(): String {
-        return properties.toString()
-    }
+    override fun toString() = properties.toString()
 }

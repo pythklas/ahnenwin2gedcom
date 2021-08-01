@@ -5,7 +5,6 @@ import de.ng.ahnenwin2gedcom.logger
 
 internal object XrefFormatter {
 
-    @JvmStatic
     fun format(id: Int): String {
         return "@$id@"
     }
@@ -16,8 +15,7 @@ internal object XrefFormatter {
         return try {
             deformatted.toInt()
         } catch (e: NumberFormatException) {
-            logger().error("Tried to deformat individual xref $formattedXref but got NumberFormatException")
-            log(e)
+            logger().error("Tried to deformat individual xref $formattedXref but got NumberFormatException.", e)
             null
         }
     }

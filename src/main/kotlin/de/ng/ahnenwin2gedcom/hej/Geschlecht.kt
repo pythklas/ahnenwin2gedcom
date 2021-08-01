@@ -6,18 +6,14 @@ enum class Geschlecht(private vararg val csvValues: String) {
     UNBEKANNT;
 
     internal companion object {
-        @JvmStatic
         fun findByCsvValue(csvValue: String?): Geschlecht {
             return values().find { csvValue?.trim() in it.csvValues} ?: UNBEKANNT
         }
     }
 
-    fun opposite(): Geschlecht {
-        return when(this) {
-            MAENNLICH -> WEIBLICH
-            WEIBLICH -> MAENNLICH
-            UNBEKANNT -> UNBEKANNT
-        }
+    fun opposite() = when(this) {
+        MAENNLICH -> WEIBLICH
+        WEIBLICH -> MAENNLICH
+        UNBEKANNT -> UNBEKANNT
     }
-
 }
