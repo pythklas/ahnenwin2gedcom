@@ -133,7 +133,7 @@
                         <artifactId>spring-boot-maven-plugin</artifactId>
                         <version>2.4.5</version>
                         <configuration>
-                            <mainClass>de.ng.ahnenwin2gedcom.Application</mainClass>
+                            <mainClass>de.ng.ahnenwin2gedcom.ApplicationKt</mainClass>
                         </configuration>
                         <executions>
                             <execution>
@@ -165,11 +165,12 @@
                         <configuration>
                             <skip>false</skip>
                             <imageName>${project.artifactId}-${project.version}</imageName>
-                            <mainClass>de.ng.ahnenwin2gedcom.Application</mainClass>
+                            <mainClass>de.ng.ahnenwin2gedcom.ApplicationKt</mainClass>
                             <buildArgs>
                                 -H:ReflectionConfigurationFiles=./classes/reflectconfig.json
                                 -H:IncludeResources=logging.properties
                                 -H:IncludeResources=application.properties
+                                -H:+AddAllCharsets
                                 --no-fallback
                             </buildArgs>
                         </configuration>
