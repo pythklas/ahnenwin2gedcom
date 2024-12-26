@@ -72,6 +72,15 @@ Folgende Programme können erfolgreich die von diesem Tool erzeugte Gedcom-Datei
  * Führe den Befehl _mvn clean package -Pexecutable-jar_ aus.
  * Die Build-Artefakte sind nun unter _/target_ zu finden.
 
+## Docker container build
+
+### Systemvorraussetzungen
+ * Docker
+
+### Anleitung
+ * Öffne ein Terminal im Grundverzeichnis des Projekts.
+ * Starte den Docker container mittels: `docker run --rm -it -v ${PWD}:/mnt/myproject:rw -w /mnt/myproject vegardit/graalvm-maven:latest-java11 mvn clean package -Pnative-image`
+ * Die Linux Build-Artefakte sind nun unter _/target_ zu finden.
 
 ## Was wird auf was abgebildet? (noch nicht fertig / still in progress)
 
