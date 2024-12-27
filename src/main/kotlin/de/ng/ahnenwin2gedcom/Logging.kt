@@ -10,6 +10,10 @@ internal fun initLoggerWithLoggingPropertiesFile() {
     LogManager.getLogManager().readConfiguration(props)
 }
 
+fun logger(moduleName: String): Logger {
+    return LoggerFactory.getLogger(moduleName)
+}
+
 fun <T : Any> T.logger(): Logger {
     return LoggerFactory.getLogger(this::class.simpleName)
 }

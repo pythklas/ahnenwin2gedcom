@@ -2,6 +2,8 @@ package de.ng.ahnenwin2gedcom
 
 import de.ng.ahnenwin2gedcom.gedcom.GedcomFactory
 import de.ng.ahnenwin2gedcom.hej.HejReader
+import org.gedcom4j.exception.GedcomWriterException
+import org.gedcom4j.exception.GedcomWriterVersionDataMismatchException
 import org.gedcom4j.writer.GedcomWriter
 import java.io.File
 import java.nio.file.Path
@@ -10,6 +12,8 @@ fun main() {
     initLoggerWithLoggingPropertiesFile()
     mapAllHejFilesToGedcomInCurrentDir()
 }
+
+val logger = logger("Application")
 
 private fun mapAllHejFilesToGedcomInCurrentDir() {
     val currentDir = File(".")
@@ -26,5 +30,15 @@ private fun mapHejToGedcomFile(hejFilePath: String) {
     val hej = HejReader.read(hejFilePath)
     val gedcom = GedcomFactory.create(hej, gedcomFileName)
     val gedcomWriter = GedcomWriter(gedcom)
-    gedcomWriter.write(gedcomPath)
+    try {
+        gedcomWriter.write(gedcomPath)
+    } catch (e: Exception) {
+        when (e) {
+            is GedcomWriterVersionDataMismatchException,
+            is GedcomWriterException -> logger.error(gedcomWriter.validator.results.toString())
+
+            else -> throw (e)
+        }
+    }
+
 }
