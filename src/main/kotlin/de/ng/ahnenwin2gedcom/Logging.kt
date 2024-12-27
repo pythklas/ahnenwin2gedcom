@@ -18,7 +18,3 @@ fun <T : Any> T.logger(): Logger {
     return LoggerFactory.getLogger(this::class.simpleName)
 }
 
-fun <T : Any> T.log(e: Exception) {
-    logger().error(e.message)
-    logger().debug(e.stackTrace?.toString())
-}

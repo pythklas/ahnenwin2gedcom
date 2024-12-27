@@ -1,6 +1,5 @@
 package de.ng.ahnenwin2gedcom.gedcom
 
-import de.ng.ahnenwin2gedcom.log
 import de.ng.ahnenwin2gedcom.logger
 
 internal object XrefFormatter {
